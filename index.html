@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bit Lab · Four machines built from latches &amp; flip-flops</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600&family=Inter:wght@400;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--fg);transition:background 1s,color 1s;overflow-x:hidden;--bg:#06070A;--fg:#F3EEE4;--ac:#E8B64C;--ac2:#7DE3C3;--ln:#ffffff24;--cd:#ffffff0a}
+body[data-t="1"]{--bg:#14060A;--fg:#FBEFF0;--ac:#FF5A6E;--ac2:#FFC857}
+body[data-t="2"]{--bg:#050F1B;--fg:#E6F4FF;--ac:#4CC9F0;--ac2:#B5F44A}
+body[data-t="3"]{--bg:#0E0B05;--fg:#F6EFD9;--ac:#E8B64C;--ac2:#3DDC97}
+body[data-t="4"]{--bg:#0D0818;--fg:#F1EAFF;--ac:#A78BFA;--ac2:#FF8AD8}
+body[data-t="5"]{--bg:#F4EFE6;--fg:#14110C;--ac:#8A5A00;--ac2:#0F6B5C;--ln:#14110C26;--cd:#ffffffcc}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:70;opacity:.07;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+section{min-height:100svh;padding:max(84px,env(safe-area-inset-top)) 6vw max(72px,env(safe-area-inset-bottom));position:relative;display:flex;flex-direction:column;justify-content:center;gap:28px;overflow:hidden}
+.pn{font:500 13px 'JetBrains Mono',ui-monospace,monospace;letter-spacing:.22em;color:var(--ac);text-transform:uppercase}
+h2{font:700 clamp(42px,7.5vw,96px)/.98 Fraunces,Georgia,serif;margin:8px 0 10px;letter-spacing:-.02em}
+h2 i,h1 i{color:var(--ac);font-style:italic}
+h4{margin:0 0 8px;font:500 12px 'JetBrains Mono',monospace;letter-spacing:.2em;text-transform:uppercase;opacity:.65}
+.sub{font-size:clamp(16px,2vw,21px);opacity:.78;max-width:46ch;line-height:1.45}
+p{margin:0;line-height:1.5}
+.cd{position:relative;overflow:hidden;background:linear-gradient(160deg,#ffffff12,#ffffff04);border:1px solid var(--ln);border-radius:28px;padding:24px;box-shadow:0 40px 90px -40px #000,inset 0 1px 0 #ffffff22;backdrop-filter:blur(14px)}
+.cd::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .4s;background:radial-gradient(480px circle at var(--mx,50%) var(--my,0),color-mix(in srgb,var(--ac) 20%,transparent),transparent 60%)}
+.cd:hover::before{opacity:1}
+body[data-t="5"] .cd{background:#fffc;box-shadow:0 30px 60px -30px #14110C44}
+.btn{min-height:46px;padding:10px 22px;border-radius:999px;border:1px solid var(--ac);background:transparent;color:var(--fg);font:600 15px Inter,sans-serif;letter-spacing:.02em;cursor:pointer;transition:.25s}
+.btn:hover,.btn[aria-pressed=true]{background:var(--ac);color:var(--bg);box-shadow:0 0 30px -4px var(--ac);transform:translateY(-2px)}
+.btn:active{transform:scale(.95)}
+button:focus-visible{outline:3px solid var(--ac);outline-offset:3px}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.proj{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:22px;align-items:stretch}
+@media(max-width:900px){.proj{grid-template-columns:1fr}}
+.pill{padding:7px 14px;border-radius:999px;border:1px solid var(--ln);font:500 12px 'JetBrains Mono',monospace;letter-spacing:.12em;background:var(--cd);color:var(--fg);text-decoration:none;transition:.3s}
+a.pill:hover{border-color:var(--ac);color:var(--ac)}
+.pill.hot{background:var(--ac);color:var(--bg);border-color:var(--ac)}
+ul{margin:0 0 16px;padding:0;list-style:none;font:500 13px 'JetBrains Mono',monospace;line-height:2;opacity:.9}
+ul li::before{content:"▸ ";color:var(--ac)}
+.msg{font:600 clamp(18px,2.4vw,26px)/1.25 Fraunces,serif;min-height:68px;color:var(--fg)}
+.rv{opacity:0;transform:translateY(46px);transition:opacity .9s,transform .9s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0s)}
+.rv.in{opacity:1;transform:none}
+#bar{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--ac),var(--ac2));transform-origin:left;transform:scaleX(0);z-index:80}
+#dots{position:fixed;right:10px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;z-index:60}
+#dots button{width:44px;height:28px;background:none;border:0;cursor:pointer;display:grid;place-items:center;padding:0}
+#dots i{width:7px;height:7px;border-radius:50%;background:var(--fg);opacity:.3;transition:.4s}
+#dots .on i{opacity:1;background:var(--ac);transform:scale(1.8);box-shadow:0 0 12px var(--ac)}
+/* hero */
+#hc{position:absolute;inset:0;width:100%;height:100%}
+.in0{position:relative;z-index:2;max-width:760px;display:flex;flex-direction:column;gap:22px}
+h1{margin:0;font:700 clamp(50px,9.5vw,128px)/.95 Fraunces,Georgia,serif;letter-spacing:-.03em}
+.ln{display:block;overflow:hidden;padding-bottom:.08em}.ln>span{display:block;transform:translateY(112%);animation:up 1.1s cubic-bezier(.16,1,.3,1) forwards;animation-delay:var(--d)}
+@keyframes up{to{transform:none}}
+.cue{color:var(--fg);text-decoration:none;font:500 12px 'JetBrains Mono',monospace;letter-spacing:.3em;display:flex;align-items:center;gap:12px;padding:10px 0;opacity:.7}
+.cue b{width:1px;height:46px;background:linear-gradient(var(--ac),transparent);animation:dr 2s ease-in-out infinite}
+@keyframes dr{50%{transform:scaleY(.4);transform-origin:top}}
+/* hardware bits */
+.lamp{width:14px;height:14px;border-radius:50%;background:#ffffff18;border:1px solid var(--ln);transition:.25s}
+.lamp.on{background:var(--c,var(--ac));box-shadow:0 0 16px var(--c,var(--ac)),0 0 40px var(--c,var(--ac));border-color:transparent}
+.led{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font:500 13px 'JetBrains Mono',monospace;background:#ffffff0f;border:1px solid var(--ln);transition:.25s}
+.led.on{background:var(--ac);color:var(--bg);box-shadow:0 0 30px var(--ac),0 0 80px color-mix(in srgb,var(--ac) 60%,transparent)}
+.pop{animation:pop .4s}@keyframes pop{40%{transform:scale(1.25)}}
+.shake{animation:shk .45s}@keyframes shk{20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(5px)}}
+/* buzzer */
+.bzb{width:clamp(88px,22vw,150px);aspect-ratio:1;border-radius:50%;border:0;cursor:pointer;color:#fff;font:700 28px Fraunces,serif;position:relative;background:radial-gradient(circle at 35% 28%,#fff9,transparent 38%),var(--c);box-shadow:0 18px 0 -2px color-mix(in srgb,var(--c) 45%,#000),0 30px 50px -10px #000;transition:transform .12s,box-shadow .12s,filter .3s,opacity .3s}
+.bzb:active{transform:translateY(12px);box-shadow:0 6px 0 -2px color-mix(in srgb,var(--c) 45%,#000),0 12px 20px -6px #000}
+.bzb kbd{display:block;font:500 11px 'JetBrains Mono',monospace;opacity:.85}
+.bzb.win{box-shadow:0 0 0 6px var(--bg),0 0 0 9px var(--c),0 0 90px var(--c)}.bzb.lost{filter:grayscale(1) brightness(.4);opacity:.6}
+.bzc{display:flex;flex-direction:column;align-items:center;gap:26px}
+#bdev.go{box-shadow:0 0 0 2px #3DDC97,0 0 80px #3DDC9755}
+/* misc */
+#sc2,#cc{width:100%;display:block}
+.kp{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;width:100%;max-width:420px}
+.kp button{aspect-ratio:1;border-radius:20px;border:1px solid var(--ln);background:linear-gradient(160deg,#ffffff1c,#ffffff06);color:var(--fg);font:700 32px Fraunces,serif;cursor:pointer;transition:.15s;box-shadow:0 6px 0 #00000066}
+.kp button:active{transform:translateY(5px);box-shadow:0 1px 0 #00000066;background:var(--ac);color:var(--bg)}
+.shk{transform-origin:130px 70px;transition:transform .7s cubic-bezier(.3,1.6,.5,1)}.shk.open{transform:translateY(-18px) rotate(22deg)}
+.ffr{display:flex;gap:clamp(4px,1.2vw,12px);justify-content:center;flex-wrap:nowrap}
+.ff{flex:1;max-width:76px;aspect-ratio:.9;border-radius:14px;border:1px solid var(--ln);display:grid;place-items:center;align-content:center;font:700 clamp(20px,4vw,34px) 'JetBrains Mono',monospace;background:#ffffff0a;transition:.25s}
+.ff small{font:500 10px 'JetBrains Mono';opacity:.6}.ff.on{background:var(--ac);color:var(--bg);box-shadow:0 0 30px -4px var(--ac)}
+.die{width:150px;aspect-ratio:1;border-radius:28px;background:linear-gradient(145deg,#fff,#d8d0ee);display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:20px;gap:6px;box-shadow:0 30px 60px -20px #000,inset 0 -6px 0 #0002}
+.die i{border-radius:50%;background:transparent;transition:.15s}.die i.on{background:#1b1030;box-shadow:inset 0 3px 3px #000a}
+.hs{display:flex;gap:8px;align-items:flex-end;height:90px}.hs div{flex:1;background:var(--ac);border-radius:6px 6px 0 0;min-height:3px;transition:height .5s cubic-bezier(.2,.8,.2,1);position:relative}
+.hs span{position:absolute;bottom:-20px;left:0;right:0;text-align:center;font:500 11px 'JetBrains Mono';opacity:.7}
+.g5{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.g5 h3{margin:4px 0 6px;font:700 26px Fraunces,serif}.g5 p{font-size:15px;opacity:.85}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body data-t="0">
+<div id="bar"></div><nav id="dots" aria-label="Sections"></nav>
+
+<section id="s0" data-t="0">
+<canvas id="hc" aria-hidden="true"></canvas>
+<div class="in0">
+<div class="pn">Lab 07 · Digital electronics · Sequential logic</div>
+<h1 aria-label="Where logic learns to remember."><span class="ln"><span style="--d:.2s">Where logic</span></span><span class="ln"><span style="--d:.38s">learns to <i>remember.</i></span></span></h1>
+<p class="sub">Four working machines, built from nothing but latches and flip-flops. Press everything.</p>
+<div class="row"><a class="pill" href="#s1">01 Buzzer</a><a class="pill" href="#s2">02 Chronos</a><a class="pill" href="#s3">03 Vault</a><a class="pill" href="#s4">04 Dice</a></div>
+<a class="cue" href="#s1"><b></b>SCROLL</a>
+</div>
+</section>
+
+<section id="s1" data-t="1">
+<header class="rv"><div class="pn">Project 01 · SR latch</div><h2>The <i>Lockout</i> Buzzer</h2><p class="sub">First finger wins. A latch loop locks everyone else out. Play with keys 1, 2, 3 or tap.</p></header>
+<div class="proj"><div class="cd rv bzc" id="bdev">
+<div class="row" style="justify-content:center;gap:clamp(10px,3vw,34px)"><div class="bzc" style="gap:18px"><button class="bzb" style="--c:#FF5A6E" aria-label="Player 1 buzzer">P1<kbd>key 1</kbd></button><i class="lamp" style="--c:#FF5A6E"></i></div><div class="bzc" style="gap:18px"><button class="bzb" style="--c:#4CC9F0" aria-label="Player 2 buzzer">P2<kbd>key 2</kbd></button><i class="lamp" style="--c:#4CC9F0"></i></div><div class="bzc" style="gap:18px"><button class="bzb" style="--c:#FFC857" aria-label="Player 3 buzzer">P3<kbd>key 3</kbd></button><i class="lamp" style="--c:#FFC857"></i></div></div>
+<div class="msg" id="bm" style="text-align:center">Press START, then be fastest after GO.</div>
+<div class="row" style="justify-content:center"><button class="btn" id="bst">Start round</button><button class="btn" id="brs">Host reset</button><span class="pill" id="lk">LOCK · open</span></div></div>
+<aside class="cd rv" style="--d:.15s"><h4>Parts list</h4><ul><li>3 × SR latch (one per player)</li><li>1 × OR gate → LOCK line</li><li>3 × AND gate (press AND NOT lock)</li></ul><h4>How it works</h4><p>Each press sets its own latch, and that raises LOCK. LOCK blocks every other button, and the latch holds until the host resets.</p><p id="bb" style="margin-top:14px;font:500 13px 'JetBrains Mono';color:var(--ac)">Best: P1 —  P2 —  P3 —</p></aside></div>
+</section>
+
+<section id="s2" data-t="2">
+<header class="rv"><div class="pn">Project 02 · T flip-flop</div><h2>Chronos <i>Counter</i></h2><p class="sub">Four toggling flip-flops, chained. Watch the carry ripple through, one stage at a time.</p></header>
+<div class="proj"><div class="cd rv">
+<div class="row" style="justify-content:space-between;gap:20px"><div><svg id="sg" viewBox="0 0 60 100" style="width:clamp(90px,22vw,140px)" aria-label="Seven-segment display"></svg></div><div class="row" id="cl" style="gap:12px"></div><div style="font:500 14px 'JetBrains Mono';line-height:1.8"><div id="cr" style="color:var(--ac);font-size:20px"></div>clock <b id="hz">2 Hz</b></div></div>
+<canvas id="cc" style="margin-top:16px;aspect-ratio:600/230" aria-label="Waveforms of the clock and four flip-flop outputs"></canvas>
+<div class="row" style="margin-top:14px"><button class="btn" id="cu" aria-pressed="true">Run</button><button class="btn" id="cd2" aria-pressed="false">Down ↓</button><button class="btn" id="cz">Speed</button><button class="btn" id="cx">Reset</button></div></div>
+<aside class="cd rv" style="--d:.15s"><h4>Parts list</h4><ul><li>4 × T flip-flop (J = K = 1)</li><li>1 × clock source</li><li>1 × 7-segment decoder</li></ul><h4>How it works</h4><p>Each flip-flop toggles when the stage before it falls from 1 to 0. So every stage runs at half the speed of the last, and together they count in binary.</p></aside></div>
+</section>
+
+<section id="s3" data-t="3">
+<header class="rv"><div class="pn">Project 03 · D flip-flop state machine</div><h2>The <i>Vault</i></h2><p class="sub">A combination lock with no software. Its only memory is three flip-flops holding the state. Hint: it starts like π.</p></header>
+<div class="proj"><div class="cd rv bzc" id="vd">
+<svg viewBox="0 0 200 190" style="width:clamp(130px,30vw,190px)" aria-label="Padlock"><g class="shk" id="shk"><path d="M60 84V58a40 40 0 0 1 80 0V84" fill="none" stroke="#E8B64C" stroke-width="14" stroke-linecap="round"/></g><rect x="35" y="80" width="130" height="100" rx="20" fill="url(#gl)"/><defs><linearGradient id="gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F7D98B"/><stop offset="1" stop-color="#A9791F"/></linearGradient></defs><circle cx="100" cy="122" r="12" fill="#2a1d05"/><rect x="95" y="124" width="10" height="28" rx="4" fill="#2a1d05"/></svg>
+<div class="msg" id="vm" style="text-align:center;min-height:56px"></div>
+<div class="kp" id="kp"></div>
+<svg id="sd" viewBox="0 0 500 70" style="width:100%" aria-label="State diagram"></svg>
+<div class="row" style="justify-content:center"><div class="led" id="vq2">Q2</div><div class="led" id="vq1">Q1</div><div class="led" id="vq0">Q0</div></div>
+<div class="row" style="justify-content:center"><button class="btn" id="vr">Re-lock</button><button class="btn" id="vs">Set new code</button></div></div>
+<aside class="cd rv" style="--d:.15s"><h4>Parts list</h4><ul><li>3 × D flip-flop = state register</li><li>1 × comparator (key = code[state])</li><li>1 × incrementer / reset logic</li></ul><h4>How it works</h4><p>Next state = state + 1 if the key is right, else back to 0. The flip-flops store that number between key presses. State 4 means unlocked.</p></aside></div>
+</section>
+
+<section id="s4" data-t="4">
+<header class="rv"><div class="pn">Project 04 · Shift register</div><h2>Silicon <i>Dice</i></h2><p class="sub">Eight D flip-flops and one XOR gate make a random-number machine called an LFSR.</p></header>
+<div class="proj"><div class="cd rv bzc">
+<div class="ffr" id="ffr" style="width:100%"></div>
+<div style="font:500 13px 'JetBrains Mono';text-align:center;opacity:.8" id="fb"></div>
+<div class="row" style="gap:36px;justify-content:center;align-items:flex-end"><div class="die" id="die" aria-live="polite"></div><div style="flex:1;min-width:220px"><div class="hs" id="hs"></div><div style="height:22px"></div></div></div>
+<div class="row" style="justify-content:center"><button class="btn" id="dr">Roll ▶</button><button class="btn" id="d1">Clock once</button><button class="btn" id="d0">Reset seed</button></div></div>
+<aside class="cd rv" style="--d:.15s"><h4>Parts list</h4><ul><li>8 × D flip-flop in a chain</li><li>3 × XOR gate (taps Q7 Q5 Q4 Q3)</li><li>1 × clock</li></ul><h4>How it works</h4><p>Every clock shifts all bits one place left, and the XOR of the tap bits feeds the new bit in. It cycles through 255 states before repeating. Roll many times and watch the bars even out.</p></aside></div>
+</section>
+
+<section id="s5" data-t="5">
+<header class="rv"><div class="pn">Field guide</div><h2>Five parts, <i>four machines.</i></h2></header>
+<div class="g5">
+<div class="cd rv"><div class="pn">Buzzer</div><h3>SR latch</h3><p>Set and reset. Level-sensitive. The simplest memory.</p></div>
+<div class="cd rv" style="--d:.07s"><div class="pn">Core idea</div><h3>D latch</h3><p>Follows D while the clock is high, then holds.</p></div>
+<div class="cd rv" style="--d:.14s"><div class="pn">Vault · Dice</div><h3>D flip-flop</h3><p>Copies D only at the clock edge. Stores state.</p></div>
+<div class="cd rv" style="--d:.21s"><div class="pn">Universal</div><h3>JK flip-flop</h3><p>Set, reset, hold, or toggle when J = K = 1.</p></div>
+<div class="cd rv" style="--d:.28s"><div class="pn">Chronos</div><h3>T flip-flop</h3><p>Toggles each tick. Divides frequency by 2.</p></div></div>
+<div class="row" style="justify-content:space-between"><p style="font:700 clamp(26px,4vw,48px) Fraunces,serif">Thank you. <i style="color:var(--ac)">Questions?</i></p><button class="btn" onclick="scrollTo({top:0})">Back to top ↑</button></div>
+</section>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const io=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&e.target.classList.add('in')),{threshold:.1});$$('.rv').forEach(e=>io.observe(e));
+const secs=$$('section');$('#dots').innerHTML=['Intro','Buzzer','Chronos','Vault','Dice','Guide'].map(n=>`<button aria-label="${n}"><i></i></button>`).join('');
+$$('#dots button').forEach((b,i)=>b.onclick=()=>secs[i].scrollIntoView({behavior:'smooth'}));
+const to=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){document.body.dataset.t=e.target.dataset.t;$$('#dots button').forEach((b,i)=>b.classList.toggle('on',secs[i]===e.target))}}),{rootMargin:'-50% 0px -50% 0px'});secs.forEach(s=>to.observe(s));
+addEventListener('scroll',()=>{$('#bar').style.transform='scaleX('+scrollY/Math.max(1,document.documentElement.scrollHeight-innerHeight)+')'},{passive:true});
+addEventListener('pointermove',e=>{const c=e.target.closest&&e.target.closest('.cd');if(c){const r=c.getBoundingClientRect();c.style.setProperty('--mx',e.clientX-r.left+'px');c.style.setProperty('--my',e.clientY-r.top+'px')}});
+const pop=(e,c='pop')=>{e.classList.remove(c);void e.offsetWidth;e.classList.add(c)};
+/* hero: the feedback loop that remembers */
+(()=>{const c=$('#hc'),x=c.getContext('2d');let W,H,mx=0,my=0,tx=0,ty=0;
+function rs(){const r=c.getBoundingClientRect(),d=devicePixelRatio||1;W=r.width;H=r.height;c.width=W*d;c.height=H*d;x.setTransform(d,0,0,d,0,0)}rs();addEventListener('resize',rs);
+addEventListener('pointermove',e=>{tx=e.clientX/innerWidth-.5;ty=e.clientY/innerHeight-.5});
+const P=t=>{const s=Math.sin(t),d=1+s*s;return[Math.cos(t)/d,s*Math.cos(t)/d]};
+(function f(ts){const t=ts/1000,w=W>800;mx+=(tx-mx)*.05;my+=(ty-my)*.05;x.clearRect(0,0,W,H);const cx=W*(w?.7:.5)+mx*36,cy=H*(w?.5:.3)+my*24,a=Math.min(W*(w?.3:.44),H*.9);
+x.fillStyle='#F3EEE411';for(let i=0;i<W;i+=36)for(let j=0;j<H;j+=36){x.fillRect(i+mx*6,j+my*6,2,2)}
+x.strokeStyle='#E8B64C44';x.lineWidth=2;x.beginPath();for(let i=0;i<=240;i++){const[p,q]=P(i/240*6.2832);i?x.lineTo(cx+p*a,cy+q*a):x.moveTo(cx+p*a,cy+q*a)}x.stroke();
+for(let k=0;k<3;k++)for(let j=0;j<30;j++){const[p,q]=P(t*.7+k*2.094-j*.03);x.fillStyle=`rgba(232,182,76,${(1-j/30)*.95})`;x.beginPath();x.arc(cx+p*a,cy+q*a,(1-j/30)*6+1,0,7);x.fill()}
+x.font='500 13px JetBrains Mono,monospace';x.textAlign='center';[-1,1].forEach(s=>{x.fillStyle='#06070Acc';x.strokeStyle='#E8B64C';x.lineWidth=1.5;x.beginPath();x.roundRect(cx+s*a*.5-30,cy-18,60,36,10);x.fill();x.stroke();x.fillStyle='#E8B64C';x.fillText('NOR',cx+s*a*.5,cy+5)});
+requestAnimationFrame(f)})(0)})();
+/* 01 buzzer */
+let L=[0,0,0],arm=0,goT=0,tm,bs=[null,null,null];const bz=()=>$$('.bzb'),bm=t=>$('#bm').textContent=t;
+function bzR(){const any=L.some(v=>v);bz().forEach((b,i)=>{b.classList.toggle('win',!!L[i]);b.classList.toggle('lost',any&&!L[i])});$$('.lamp').forEach((l,i)=>l.classList.toggle('on',!!L[i]));$('#lk').textContent='LOCK · '+(any?'ENGAGED':'open');$('#lk').classList.toggle('hot',any);$('#bdev').classList.toggle('go',arm==2);$('#bb').textContent='Best: '+bs.map((v,i)=>`P${i+1} ${v==null?'—':v+'ms'}`).join('  ')}
+function press(i){const b=bz()[i];if(arm==1){clearTimeout(tm);arm=0;bm('False start by P'+(i+1)+'! Too eager. Hit start to retry.');pop(b,'shake');bzR();return}
+if(L.some(v=>v)){pop(b,'shake');bm('P'+(i+1)+' is locked out. The latch loop already holds P'+(L.indexOf(1)+1)+'.');return}
+L[i]=1;const ms=arm==2?Math.round(performance.now()-goT):null;arm=0;if(ms!=null){bs[i]=Math.min(bs[i]??1e9,ms);bm(`P${i+1} wins in ${ms} ms!`)}else bm('P'+(i+1)+' latched first. Everyone else is locked out.');bzR()}
+bz().forEach((b,i)=>b.onclick=()=>press(i));
+$('#bst').onclick=()=>{L=[0,0,0];arm=1;bm('Get ready…');bzR();clearTimeout(tm);tm=setTimeout(()=>{arm=2;goT=performance.now();bm('GO!');bzR()},1400+Math.random()*2800)};
+$('#brs').onclick=()=>{clearTimeout(tm);arm=0;L=[0,0,0];bzR();bm('Latches cleared. Free play: first press wins.')};bzR();
+/* 02 chronos */
+const SG={a:[12,4,36,8],b:[48,12,8,34],c:[48,54,8,34],d:[12,88,36,8],e:[4,54,8,34],f:[4,12,8,34],g:[12,46,36,8]},HX='abcdef,bc,abdeg,abcdg,bcfg,acdfg,acdefg,abc,abcdefg,abcdfg,abcefg,cdefg,adef,bcdeg,adefg,aefg'.split(',');
+let cv=0,dp=0,dir=1,run=1,hzi=1,tk,tms=[],hist=[];const HZ=[1,2,4,8];
+$('#cl').innerHTML=[3,2,1,0].map(i=>`<div class="led" id="c${i}">Q${i}</div>`).join('');
+function cR(){$('#sg').innerHTML=Object.entries(SG).map(([k,[a,b,w,h]])=>{const on=HX[dp].includes(k);return`<rect x="${a}" y="${b}" width="${w}" height="${h}" rx="4" fill="${on?'var(--ac)':'#ffffff10'}" ${on?'style="filter:drop-shadow(0 0 7px var(--ac))"':''}/>`}).join('');for(let i=0;i<4;i++)$('#c'+i).classList.toggle('on',!!(dp>>i&1));$('#cr').textContent=dp+' · 0x'+dp.toString(16).toUpperCase()+' · '+dp.toString(2).padStart(4,'0')}
+function cS(){const c=$('#cc'),x=c.getContext('2d'),r=c.getBoundingClientRect(),d=devicePixelRatio||1;if(c.width!=Math.round(r.width*d)){c.width=Math.round(r.width*d);c.height=Math.round(r.height*d)}x.setTransform(r.width/600*d,0,0,r.width/600*d,0,0);x.clearRect(0,0,600,230);const n=32,sw=600/n,rows=[['CLK','#ffffffcc'],['Q0','#4CC9F0'],['Q1','#4CC9F0'],['Q2','#4CC9F0'],['Q3','#4CC9F0']];
+rows.forEach(([nm,col],j)=>{const y0=10+j*44,h=26;x.beginPath();x.strokeStyle=col;x.lineWidth=2.5;x.shadowBlur=8;x.shadowColor=col;x.lineJoin='round';let py=null;hist.forEach((v,i)=>{const segs=j?[v>>(j-1)&1]:[1,0];segs.forEach((b,k)=>{const xx=(i+k/segs.length)*sw,y=b?y0:y0+h;if(py===null)x.moveTo(xx,y);else{x.lineTo(xx,py);x.lineTo(xx,y)}py=y;x.lineTo(xx+sw/segs.length,y)})});x.stroke();x.shadowBlur=0;x.fillStyle=col;x.font='500 10px JetBrains Mono,monospace';x.fillText(nm+(j?' ÷'+(2<<(j-1)):''),4,y0+h+11)})}
+function cT(){cv=(cv+dir+16)&15;const ch=(cv^(cv-dir+16))&15,old=(cv-dir+16)&15;hist.push(cv);if(hist.length>32)hist.shift();for(let i=0;i<4;i++)if((old^cv)>>i&1)tms.push(setTimeout(()=>{dp^=1<<i;cR()},i*80));cS()}
+function cG(){clearInterval(tk);if(run)tk=setInterval(cT,1000/HZ[hzi]);$('#hz').textContent=HZ[hzi]+' Hz'}
+$('#cu').onclick=()=>{run=!run;$('#cu').setAttribute('aria-pressed',!!run);$('#cu').textContent=run?'Run':'Paused';cG()};
+$('#cd2').onclick=()=>{dir=-dir;$('#cd2').setAttribute('aria-pressed',dir<0);$('#cd2').textContent=dir<0?'Up ↑':'Down ↓'};
+$('#cz').onclick=()=>{hzi=(hzi+1)%4;cG()};$('#cx').onclick=()=>{tms.forEach(clearTimeout);tms=[];cv=dp=0;hist=[];cR();cS()};
+cR();cG();addEventListener('resize',cS);
+/* 03 vault */
+let code=[3,1,4,2],st=0,setm=0,rec=[];const vm=t=>$('#vm').textContent=t;
+$('#kp').innerHTML=[1,2,3,4].map(n=>`<button aria-label="Key ${n}">${n}</button>`).join('');
+function vR(){$('#shk').classList.toggle('open',st==4);[2,1,0].forEach(i=>{const e=$('#vq'+i),was=e.classList.contains('on');e.classList.toggle('on',!!(st>>i&1));if(was!=!!(st>>i&1))pop(e)});
+$('#sd').innerHTML=[0,1,2,3,4].map(i=>{const X=40+i*105,on=i==st,dn=i<st;return(i?`<path d="M${X-83} 35H${X-24}" stroke="${dn||on?'var(--ac)':'#ffffff44'}" stroke-width="3"/><path d="M${X-24} 35l-8-5v10z" fill="${dn||on?'var(--ac)':'#ffffff44'}"/>`:'')+`<circle cx="${X}" cy="35" r="22" fill="${on?'var(--ac)':'#ffffff0d'}" stroke="${dn||on?'var(--ac)':'#ffffff44'}" stroke-width="2.5" ${on?'style="filter:drop-shadow(0 0 10px var(--ac))"':''}/><text x="${X}" y="40" text-anchor="middle" font-family="JetBrains Mono" font-weight="500" font-size="15" fill="${on?'#0E0B05':'var(--fg)'}">${i==4?'OPEN':'S'+i}</text>`}).join('')}
+function key(n){if(setm){rec.push(n);vm('Recording '+rec.length+' of 4…');if(rec.length==4){code=rec;setm=0;st=0;vm('New code saved. The vault is locked.')}return vR()}
+if(st==4)return;if(n==code[st]){st++;vm(st==4?'UNLOCKED. State 4 reached.':'Correct. Moving to state '+st+'.')}else{if(st)pop($('#vd'),'shake');st=0;vm('Wrong key. Back to state 0.')}vR()}
+$$('#kp button').forEach((b,i)=>b.onclick=()=>key(i+1));
+$('#vr').onclick=()=>{st=0;setm=0;vm('Locked. Enter the 4-key code.');vR()};
+$('#vs').onclick=()=>{setm=1;rec=[];st=0;vm('Press 4 keys to set a new code.');vR()};vm('Locked. Enter the 4-key code.');vR();
+/* 04 LFSR dice */
+const SEED=0xA5;let r=SEED,cnt=[0,0,0,0,0,0],busy=0;const tap=v=>((v>>7)^(v>>5)^(v>>4)^(v>>3))&1,PIPS=[[4],[0,8],[0,4,8],[0,2,6,8],[0,2,4,6,8],[0,2,3,5,6,8]];
+$('#ffr').innerHTML=[7,6,5,4,3,2,1,0].map(i=>`<div class="ff" id="f${i}"></div>`).join('');$('#die').innerHTML='<i></i>'.repeat(9);
+function dR(final){for(let i=0;i<8;i++){const e=$('#f'+i);e.className='ff'+(r>>i&1?' on':'');e.innerHTML=(r>>i&1)+'<small>Q'+i+'</small>'}
+const f=r%6;$$('#die i').forEach((p,i)=>p.classList.toggle('on',PIPS[f].includes(i)));$('#fb').textContent='state 0x'+r.toString(16).toUpperCase().padStart(2,'0')+'  ·  next bit = Q7⊕Q5⊕Q4⊕Q3 = '+tap(r);
+const m=Math.max(1,...cnt);$('#hs').innerHTML=cnt.map((v,i)=>`<div style="height:${v/m*90}px"><span>${i+1}</span></div>`).join('')}
+function dC(){r=((r<<1)&255)|tap(r);dR()}
+$('#d1').onclick=dC;$('#d0').onclick=()=>{r=SEED;cnt.fill(0);dR()};
+$('#dr').onclick=()=>{if(busy)return;busy=1;let n=0;const iv=setInterval(()=>{dC();if(++n>=28+(r&7)){clearInterval(iv);cnt[r%6]++;busy=0;dR();pop($('#die'))}},45)};dR();
+addEventListener('keydown',e=>{const t=document.body.dataset.t;if(t=='1'&&'123'.includes(e.key)&&e.key)press(+e.key-1);if(t=='3'&&'1234'.includes(e.key)&&e.key)key(+e.key)});
+</script>
+</body>
+</html>
